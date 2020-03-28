@@ -1,0 +1,11 @@
+﻿@*@model FoodOrderingApp.ViewModels.PieListViewModel*@ @** this line was removed and added in ViewImports.cshtml*@
+@model PieListViewModel 
+<h1>@Model.CurrentCategory</h1>
+@*@foreach (var pie in Model) makes Sure the Model is uppercase it refers to the Data that IEnumerable in Pies that the views going to get passed in from the Controller*@
+@foreach (var pie in Model.Pies)
+{
+    // code have been moved to _PieCard.cshtml
+    <partial name="_PieCard" model="pie"/>
+    // NOte: it has no action method it takes data and display. it is razor view. 
+}
+
