@@ -1,0 +1,14 @@
+﻿
+@model MenuListViewModel
+
+@foreach (var category in Model.AllCategories)
+{
+    <h2>@category.CategoryName</h2>
+
+    @foreach (var item in Model.AllItems)
+    {
+        //Display each item via ItemCard
+        <partial name="_ItemCard" model="item" />
+    }
+
+}
