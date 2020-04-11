@@ -1,8 +1,12 @@
-﻿namespace FoodOrderingApp.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace FoodOrderingApp.Models
 {
     public interface IPayment
     {
-        decimal TotalAmount { get; set; }
-        decimal GetDiscountedPrince(decimal discountPercent, decimal totalBill);
+        decimal GetDiscountedPrice(string discountCode, decimal cartBillAmount);
     }
 }

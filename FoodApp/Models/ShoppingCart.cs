@@ -8,138 +8,140 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BethanysPieShop.Models
+namespace FoodOrderingApp.Models
 {
-    public class ShoppingCart 
+    public class ShoppingCart
     {
-        private readonly IPieRepository _mockPieRepository;
-
         public string ShoppingCartId { get; set; }
-
         public List<ShoppingCartItem> ShoppingCartItems { get; set; }
-        public static List<ShoppingCartItem> ShoppingCartItems1=new List<ShoppingCartItem>();// remove
-        // the above being is used because to persist data in the service.
 
+        private static ShoppingCart instance = null;
+        private static readonly object padlock = new object();
+        private decimal _shoppingCartPrice = 0;
 
-        public ShoppingCart(IPieRepository pieRepository)
+        ShoppingCart()
         {
-            //_mockPieRepository = new  MockPieRepository();
-            //_mockPieRepository.ShoppingCartItems = new List<ShoppingCartItem>();
-            _mockPieRepository = pieRepository;
-           // _mockPieRepository.ShoppingCartItems = new List<ShoppingCartItem>();//remove
+            ShoppingCartItems = new List<ShoppingCartItem>();
         }
 
-        public static ShoppingCart GetCart(IServiceProvider services) // this will give the services which we use for dependency injection
+        #region Helper Methods
+        /// <summary>
+        /// Used by Startup class to get the instance of Cart
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns> 
+        public static ShoppingCart GetCart(IServiceProvider services)
         {
-            ISession session = services.GetRequiredService<IHttpContextAccessor>()?
-                .HttpContext.Session;
+            ISession session = services.GetRequiredService<IHttpContextAccessor>()?.HttpContext.Session;
 
-            var context = services.GetService<IPieRepository>();
-            context.ShoppingCartItems = ShoppingCartItems1;
             string cartId = session.GetString("CartId") ?? Guid.NewGuid().ToString();
 
             session.SetString("CartId", cartId);
 
-            return new ShoppingCart(context) { ShoppingCartId = cartId };
+            if (instance == null)
+            {
+                lock (padlock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new ShoppingCart() { ShoppingCartId = cartId };
+                    }
+                }
+            }
+
+            return instance;
         }
 
-        public void AddToCart(Pie pie, int amount)
+        /// <summary>
+        /// Add to cart method
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="quantity"></param>
+        public void AddToCart(MenuItem item, int quantity)
         {
             var shoppingCartItem =
-                    _mockPieRepository.ShoppingCartItems.SingleOrDefault(
-                        s => s.Pie.PieId == pie.PieId && s.ShoppingCartId == ShoppingCartId);
+                   ShoppingCartItems?.SingleOrDefault(
+                        s => s.CartItem.ItemId == item.ItemId && s.ShoppingCartId == ShoppingCartId);
 
             if (shoppingCartItem == null)
             {
                 shoppingCartItem = new ShoppingCartItem
                 {
                     ShoppingCartId = ShoppingCartId,
-                    Pie = pie,
-                    Amount = 1
+                    CartItem = item,
+                    Quantity = quantity
                 };
 
-              //  _mockPieRepository.ShoppingCartItems.Add(shoppingCartItem);
-                ShoppingCartItems1.Add(shoppingCartItem);
+                ShoppingCartItems.Add(shoppingCartItem);
             }
             else
             {
-                shoppingCartItem.Amount++;
+                shoppingCartItem.Quantity = shoppingCartItem.Quantity + quantity;
             }
-           // _appDbContext.SaveChanges(); not required as not saving anywhere
+            UpdateTheCartprice();
         }
 
-        public int RemoveFromCart(Pie pie)
+        /// <summary>
+        /// Remove from cart method
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>Quantity left in the cart for selected item, to be remmoved</returns>
+        public int RemoveFromCart(MenuItem item)
         {
-            _mockPieRepository.ShoppingCartItems = ShoppingCartItems1;
-           var shoppingCartItem =
-                    _mockPieRepository.ShoppingCartItems.SingleOrDefault(
-                        s => s.Pie.PieId == pie.PieId && s.ShoppingCartId == ShoppingCartId);
+            var shoppingCartItem =
+                    ShoppingCartItems.SingleOrDefault(
+                        s => s.CartItem.ItemId == item.ItemId && s.ShoppingCartId == ShoppingCartId);
 
-            var localAmount = 0;
+            var localItemQuantity = 0;
 
             if (shoppingCartItem != null)
             {
-                if (shoppingCartItem.Amount > 1)
+                if (shoppingCartItem.Quantity > 1)
                 {
-                    shoppingCartItem.Amount--;
-                    localAmount = shoppingCartItem.Amount;
+                    shoppingCartItem.Quantity--;
+                    localItemQuantity = shoppingCartItem.Quantity;
                 }
                 else
                 {
-                    _mockPieRepository.ShoppingCartItems.Remove(shoppingCartItem);
+                    ShoppingCartItems.Remove(shoppingCartItem);
                 }
             }
-
-           // _appDbContext.SaveChanges();
-
-            return localAmount;
+            UpdateTheCartprice();
+            return localItemQuantity;
         }
 
+        /// <summary>
+        /// To get all cart items
+        /// </summary>
+        /// <returns></returns>
         public List<ShoppingCartItem> GetShoppingCartItems()
         {
-            return ShoppingCartItems ??
-                   (ShoppingCartItems =
-                       _mockPieRepository.ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId)
-                       .Select(s=>s).ToList());
-
-
-                           // .Include(s => s.Pie)
-
-                           //.ToList());
+            return ShoppingCartItems ?? (ShoppingCartItems = ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId).ToList());
         }
 
+        /// <summary>
+        /// Clears the cart
+        /// </summary>
         public void ClearCart()
         {
-            var cartItems = _mockPieRepository
-                .ShoppingCartItems
-                .Where(cart => cart.ShoppingCartId == ShoppingCartId);
-            _mockPieRepository.ShoppingCartItems.Clear();
-            ShoppingCartItems1.Clear();
-        //  _mockPieRepository.ShoppingCartItems.RemoveRange(cartItems);
-
-           // _appDbContext.SaveChanges();
+            var cartItems = ShoppingCartItems.Where(cart => cart.ShoppingCartId == ShoppingCartId);
+            ShoppingCartItems.Clear();
         }
 
-        public decimal GetShoppingCartTotal() // insert
+        /// <summary>
+        /// Calculates the total price of the cart
+        /// </summary>
+        /// <returns>Total amount</returns>
+        private void UpdateTheCartprice()
         {
-            _mockPieRepository.ShoppingCartItems = ShoppingCartItems1;// remove
-            var total = _mockPieRepository.ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId)
-                .Select(c => c.Pie.Price * c.Amount).Sum();
-            return total;
+            _shoppingCartPrice = ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId)
+                .Select(c => c.CartItem.Price * c.Quantity).Sum();           
         }
-
-        public int GetTotalCountItems()
+        public decimal GetShoppingCartTotal()
         {
-            int count = 0;
-            
-            foreach(var items in ShoppingCartItems1)
-            {
-                if(items.ShoppingCartId==ShoppingCartId)
-                count = count+items.Amount;
-            }
-
-            return count;
+            return _shoppingCartPrice;
         }
-        
+        #endregion
+
     }
 }

@@ -1,65 +1,63 @@
 ﻿@model ShoppingCartViewModel
 
-<h2>Your shopping cart</h2>
-<h4>Here are the delicious pies in your shopping cart.</h4>
+<h2>Here is your shopping cart...</h2>
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
-            <th>Selected amount</th>
-            <th>Pie</th>
+            <th>Qty</th>
+            <th>Item</th>
             <th class="text-right">Price</th>
             <th class="text-right">Subtotal</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var line in Model.ShoppingCart.ShoppingCartItems)
+        @foreach (var item in Model.ShoppingCart.ShoppingCartItems)
         {
         <tr>
-
-            <td class="text-left">@line.Pie.Name</td>
-            <td class="text-right">@line.Pie.Price.ToString("c")</td>
-            <td class="text-center">@line.Amount</td>
+            <td class="text-center">@item.Quantity</td>
+            <td class="text-left">@item.CartItem.Name</td>
+            <td class="text-right">@item.CartItem.Price.ToString("c")</td>
             <td class="text-right">
-                @((line.Amount * line.Pie.Price).ToString("c"))
+                @((item.Quantity * item.CartItem.Price).ToString("c"))
             </td>
             <td>
-                <p class="button text-center">
+                <p class="button">
                     <a class="btn " style="text-decoration: none;"
                        asp-controller="ShoppingCart"
                        asp-action="AddToShoppingCart"
-                       asp-route-pieId="@line.Pie.PieId">
-                        <i class="fa fa-plus" style="padding: 21%;"></i>
+                       asp-route-itemId="@item.CartItem.ItemId">
+                        <i class="fa fa-plus" style="display: block;"></i>
                     </a>
                 </p>
             </td>
             <td>
-                <p class="button text-center">
+                <p class="button">
                     <a class="btn" style="text-decoration: none;"
                        asp-controller="ShoppingCart"
                        asp-action="RemoveFromShoppingCart"
-                       asp-route-pieId="@line.Pie.PieId"><i class="fa fa-minus" style="display: block;"></i></a>
+                       asp-route-itemId="@item.CartItem.ItemId">
+                        <i class="fa fa-minus" style="display: block; padding-left : 10px"></i></a>
                 </p>
             </td>
         </tr>
         }
     </tbody>
+
     <tfoot>
         <tr>
-            <td colspan="3" class="text-right"style="padding-left: 53%;">Total:</td>
-            <td class="text-right">
+            <th colspan="3" class="text-right">Grand Total : </th>
+            <th class="text-right">
                 @Model.ShoppingCartTotal.ToString("c")
-            </td>
+            </th>
         </tr>
     </tfoot>
-    
-        
-   
 </table>
+
 <div>
     <p class="button">
         <a class="btn btn btn-primary"
            asp-controller="Payment"
-           asp-action="CheckOut">Click-to-CheckOut</a>
+           asp-action="CheckOut">Proceed to CheckOut</a>
     </p>
 </div>
 

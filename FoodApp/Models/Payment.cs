@@ -5,21 +5,19 @@ using System.Threading.Tasks;
 
 namespace FoodOrderingApp.Models
 {
-    public class Payment :IPayment
+    public class Payment : IPayment
     {
-        public decimal TotalAmount { get; set; }
-        public decimal DiscountedAmount { get; set; }
-        public PaymentOption PaymentType;
-        public decimal GetDiscountedPrince(decimal discountPercent, decimal totalBill)
+        public decimal GetDiscountedPrice(string discountCode, decimal cartBillAmount)
         {
-            decimal payableAmount = totalBill - ((discountPercent / 100) *totalBill);
+            var discountPercentage = DiscountCalculator.GetDiscountPercentage(discountCode);
+            var payableAmount = cartBillAmount - ((discountPercentage / 100) * cartBillAmount);
             return payableAmount;
         }
     }
-   
+
     public enum PaymentOption
     {
-        Cash=1,
-        Card=2
+        Cash = 1,
+        Card = 2
     }
 }

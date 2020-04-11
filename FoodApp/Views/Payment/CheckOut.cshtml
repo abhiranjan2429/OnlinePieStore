@@ -1,37 +1,34 @@
 ﻿@model PaymentViewModel
 
-
 <div>
-    <h2>Welcome to payment processing Unit</h2>
-    <h3>Your Total Bill:  @Model.TotalAmount</h3>
+    <h4>Your Total Bill Amount :  @Model.Bill</h4>
+
     @*<form method="post">*@
-    <form asp-action="CheckOut" asp-controller="Payment" asp-route-discountPercent=@Model.discountedPercent>
-        <label>Enter Your CouponCode</label>
-        <input type="number" asp-for="@Model.discountedPercent" id="discountedPercent" name="discountPercent" min="0" max="100">
+    <form asp-action="CheckOut" asp-controller="Payment" asp-route-discountCode=@Model.DiscountCode>
+        <label>Enter Your Coupon code</label>
+        <input type="text" asp-for="@Model.DiscountCode" id="DiscountCode" name="DiscountCode">
         <input type="submit" value="Apply Code" class="btn btn-primary" />
-        @*<a class="btn "asp-controller="Payment" asp-action="ProceedToPayment" asp-route-discountPercent="">
-            </a>*@
     </form>
 
 </div>
 
-    <div>
-        @if (Model.discountedPercent != 0)
-        {
-            <h1>Congratulations . Discount is applied</h1>
-        }
+<div>
 
-        <h2>The final Price :</h2>
-        <div>
-            <h2>@Model.DiscountedAmount</h2>
-        </div>
-        @if (Model.DiscountedAmount <= 10)
-        {
-            <a class="btn btn-primary" value="PayCash" asp-action="Successful">PayCash</a>
+    @if (Model.FinalAmount < Model.Bill)
+    {
+        <h3>Congratulations! Discount is applied.</h3>
+    }
 
-        }
-        <a class="btn btn-primary" value="PayCash" asp-action="CardSuccessful">Pay With Card</a>
+    <h2>Amount payable : @Model.FinalAmount</h2>
 
-    </div>
+    @if (Model.FinalAmount <= 10)
+    {
+        <a class="btn btn-primary" value="PayCash" asp-action="Success">Pay by Cash</a>
+    }
+
+    <a class="btn btn-primary" value="PayCard" asp-action="Success">Pay by Card</a>
+
+</div>
+
 
 

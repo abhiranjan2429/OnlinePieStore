@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FoodOrderingApp.Models;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +9,11 @@ namespace FoodOrderingApp.ViewModels
 {
     public class PaymentViewModel
     {
-        public decimal TotalAmount { get; set; }
-        public decimal DiscountedAmount { get; set; }
+        public decimal Bill { get; set; }
+        public decimal FinalAmount { get; set; }
+
         [BindProperty]
-        public decimal discountedPercent { get; set; }
-        public PaymentOption PaymentType;
-        public bool payview { get; set; }
-    }
-    public enum PaymentOption
-    {
-        Cash = 1,
-        Card = 2
+        public string DiscountCode { get; set; }
+        public PaymentOption PaymentMethod;
     }
 }

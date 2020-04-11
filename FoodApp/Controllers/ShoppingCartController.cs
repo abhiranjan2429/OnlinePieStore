@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BethanysPieShop.Models;
 using FoodOrderingApp.Models;
 using FoodOrderingApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -11,17 +10,23 @@ namespace FoodOrderingApp.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        private readonly IPieRepository _pieRepository;
+        private readonly IFoodItemRepository _foodItemRepository;
         private readonly ShoppingCart _shoppingCart;
-        public ShoppingCartController(IPieRepository pieRepository, ShoppingCart shoppingCart)
+        public ShoppingCartController(IFoodItemRepository foodRepository, ShoppingCart shoppingCart)
         {
-            _pieRepository = pieRepository;
+            _foodItemRepository = foodRepository;
             _shoppingCart = shoppingCart;
         }
-        // Get /<Controller>/
+
+        #region Action Methods on Shopping Cart
+
+        /// <summary>
+        /// Renders the Cart view
+        /// </summary>
+        /// <returns></returns>
         public ViewResult Index()
         {
-            var items = _shoppingCart.GetShoppingCartItems();
+            var items = _shoppingCart.GetShoppingCartItems(); 
             _shoppingCart.ShoppingCartItems = items;
 
             var shoppingCartViewModel = new ShoppingCartViewModel
@@ -33,28 +38,42 @@ namespace FoodOrderingApp.Controllers
             return View(shoppingCartViewModel);
         }
 
-        public RedirectToActionResult AddToShoppingCart(int pieId)
+        /// <summary>
+        /// Action to add selected item to the Cart
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        public RedirectToActionResult AddToShoppingCart(int itemId)
         {
-            var selectedPie = _pieRepository.AllPies.FirstOrDefault(p => p.PieId == pieId);
+            var selectedItem = _foodItemRepository.AllFoodItems.FirstOrDefault(p => p.ItemId == itemId);
 
-            if (selectedPie != null)
+            if (selectedItem != null)
             {
-                _shoppingCart.AddToCart(selectedPie, 1);
-            }
-          // return RedirectToAction("list","pie");
-            return RedirectToAction("Index");
-          //  return View();
-        }
-
-        public RedirectToActionResult RemoveFromShoppingCart(int pieId)
-        {
-            var selectedPie = _pieRepository.AllPies.FirstOrDefault(p => p.PieId == pieId);
-
-            if (selectedPie != null)
-            {
-                _shoppingCart.RemoveFromCart(selectedPie);
+                _shoppingCart.AddToCart(selectedItem, 1);
             }
             return RedirectToAction("Index");
         }
+
+        /// <summary>
+        /// Action to remove selected item from the Cart
+        /// </summary>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        public RedirectToActionResult RemoveFromShoppingCart(int itemId)
+        {
+            var selectedItem = _foodItemRepository.AllFoodItems.FirstOrDefault(p => p.ItemId == itemId);
+
+            if (selectedItem != null)
+            {
+                _shoppingCart.RemoveFromCart(selectedItem);
+                if (_shoppingCart.ShoppingCartItems.Count == 0)
+                {
+                    //Redirect to Home
+                }
+            }
+            return RedirectToAction("Index");
+        }
+
+        #endregion
     }
 }

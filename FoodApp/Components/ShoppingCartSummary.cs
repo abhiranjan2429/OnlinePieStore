@@ -1,14 +1,14 @@
-﻿using BethanysPieShop.Models;
-using FoodOrderingApp.ViewModels;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FoodOrderingApp.Models;
+using FoodOrderingApp.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrderingApp.Components
 {
-    public class ShoppingCartSummary : ViewComponent 
+    public class ShoppingCartSummary : ViewComponent
     {
         private readonly ShoppingCart _shoppingCart;
 
@@ -19,27 +19,16 @@ namespace FoodOrderingApp.Components
 
         public IViewComponentResult Invoke()
         {
-
             var items = _shoppingCart.GetShoppingCartItems();
             _shoppingCart.ShoppingCartItems = items;
 
-            var shaoppingCartTotalCountViewModel = new ShaoppingCartTotalCountViewModel
+            var shoppingCartViewModel = new ShoppingCartViewModel
             {
-                TotalCountOfProduct = _shoppingCart.GetTotalCountItems()
+                ShoppingCart = _shoppingCart,
+                ShoppingCartTotal = _shoppingCart.GetShoppingCartTotal()
             };
-            // int  x = _shoppingCart.GetTotalCountItems();
-            return View(shaoppingCartTotalCountViewModel);
-        }
-        //int getTotalCountOfItem(List<ShoppingCartItem> shoppingCartItems)
-        //{
-        //    int count = 0;
-        //    foreach(var product in shoppingCartItems )
-        //    {
-        //       // ShoppingCart.ShoppingCartItems1.
-        //      //  count = count + product.;
-        //    }
 
-        //    return 0;
-        //}
+            return View(shoppingCartViewModel);
+        }
     }
 }
